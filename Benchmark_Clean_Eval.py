@@ -420,73 +420,7 @@ def main():
         'history': {'acc': [0]*15}, 'fps': fps_yolo, 'params': yolo_params
     }
 
-    # 5. QSVC Benchmark
-    print(f"\n=============================================")
-    print(f"🚀 Running QSVC Benchmark")
-    print(f"=============================================")
-    def extract_features(dataloader, model):
-        model.eval()
-        all_features, all_lbls = [], []
-        with torch.no_grad():
-            for images, labels in dataloader:
-                x = model.features(images.to(device))
-                x = model.avgpool(x).view(x.size(0), -1)
-                x = torch.nn.functional.normalize(model.fc1(x), p=2, dim=1, eps=1e-8)
-                all_features.append(x.cpu().numpy())
-                all_lbls.append(labels.numpy())
-        return np.vstack(all_features), np.concatenate(all_lbls)
 
-    tl_model = models_to_run[-1][0] # Hybrid CNN-QNN (Transfer Learning)
-    train_features, train_labels_qsvc = extract_features(train_loader, tl_model)
-    ninja_features, ninja_labels_qsvc = extract_features(ninja_loader, tl_model)
-
-    subset_size = min(100, len(train_features))
-    if len(np.unique(train_labels_qsvc)) > 1:
-        train_features_sub, _, train_labels_sub, _ = train_test_split(
-            train_features, train_labels_qsvc, train_size=subset_size, 
-            stratify=train_labels_qsvc, random_state=42
-        )
-    else:
-        train_features_sub = train_features[:subset_size]
-        train_labels_sub = train_labels_qsvc[:subset_size]
-    
-    def compute_kernel_matrix(A, B):
-        print(f"  -> Computing {len(A)}x{len(B)} kernel matrix (using classical algebraic equivalent)...")
-        # Since the quantum kernel circuit is just AmplitudeEmbedding(x1) followed by adjoint(AmplitudeEmbedding(x2)),
-        # it mathematically simplifies exactly to the squared dot product of the two L2-normalized vectors.
-        return np.clip((A @ B.T) ** 2, 0, 1.0)
-
-    print("Computing Kernel Matrix and Fitting SVC...")
-    K_train = compute_kernel_matrix(train_features_sub, train_features_sub)
-    svc = SVC(kernel="precomputed", probability=True)
-    svc.fit(K_train, train_labels_sub)
-    
-    model_path = os.path.join(save_dir, "Hybrid_CNN_QSVC.pkl")
-    joblib.dump(svc, model_path)
-    print(f"✅ Model saved to {model_path}")
-    
-    print("Evaluating QSVC on OOD DatasetNinja...")
-    K_test = compute_kernel_matrix(ninja_features, train_features_sub)
-    qsvc_preds = svc.predict(K_test)
-    qsvc_probs = svc.predict_proba(K_test)[:, 1]
-    
-    acc_q = accuracy_score(ninja_labels_qsvc, qsvc_preds)
-    f1_q = f1_score(ninja_labels_qsvc, qsvc_preds, zero_division=0)
-    print(f"  --> Acc: {acc_q:.4f} | F1: {f1_q:.4f}")
-    
-    try:
-        auc_q = roc_auc_score(ninja_labels_qsvc, qsvc_probs)
-    except ValueError:
-        auc_q = float('nan')
-        
-    results_summary.append({
-        "Model": "Hybrid CNN-QSVC", "OOD_Accuracy": acc_q, "OOD_F1": f1_q, "OOD_Precision": precision_score(ninja_labels_qsvc, qsvc_preds, zero_division=0),
-        "OOD_Recall": recall_score(ninja_labels_qsvc, qsvc_preds, zero_division=0), "OOD_AUC": auc_q, "FPS": float('nan'), "Params": 1024
-    })
-    results_raw["Hybrid CNN-QSVC"] = {
-        'labels': ninja_labels_qsvc, 'preds': qsvc_preds, 'probs': qsvc_probs,
-        'history': {'acc': [0]*15}, 'fps': float('nan'), 'params': 1024
-    }
 
     # 6. Save Summary and Generate Plots
     df = pd.DataFrame(results_summary)

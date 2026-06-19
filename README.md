@@ -1,100 +1,76 @@
-#  AGRIBOT USING HYBRID QUANTUM-CLASSICAL WEED DETECTION SYSTEM FOR AGRICULTURE 🌌
+# 🚀 Quantum-Enhanced Computer Vision for Weed Classification (IBM QFF25)
 
-Welcome to the **Quantum_Classification** repository! This project explores the cutting-edge intersection of quantum computing and machine learning, focusing on quantum-enhanced classification techniques. Through innovative methodologies and rigorous experimentation, this work demonstrates the potential of quantum algorithms to outperform classical approaches in specific classification tasks. 🚀
+Welcome to the definitive repository for the **Hybrid Classical-Quantum Computer Vision** architecture, designed for extreme Out-Of-Distribution (OOD) generalization in agricultural datasets (Corn vs. Weed).
 
-## 📖 Project Overview
+This project was built for the **IBM Quantum Hackathon** and systematically benchmarks State-Of-The-Art (SOTA) classical architectures against a novel **Hybrid CNN-Transfer-Quantum QSVC** pipeline. 
 
-This repository contains the implementation, documentation, and results of a research project aimed at leveraging quantum machine learning (QML) for classification problems. The project investigates variational quantum circuits (VQCs) and hybrid quantum-classical models to classify datasets, with a focus on achieving high accuracy and computational efficiency on noisy intermediate-scale quantum (NISQ) devices.
+## 🧠 The Architecture: A Defense of the Hybrid QSVC Approach
 
-**Key Highlights**:
-- **Quantum Advantage**: Demonstrates how quantum circuits can enhance classification performance compared to classical neural networks.
-- **Hybrid Approach**: Integrates classical preprocessing with quantum circuits for robust model training.
-- **Real-World Application**: Evaluates the model on benchmark datasets like MNIST and FashionMNIST, with potential extensions to complex real-world problems.
+Why introduce Quantum Computing into Computer Vision? Standard deep learning models (like ResNet, MobileNet, EfficientNet, and YOLOv8) achieve near-perfect training accuracies on specific datasets. However, when deployed in the real world—where lighting, soil color, and crop varietals change—they suffer catastrophic failure due to their hyper-reliance on narrow visual distributions.
 
-This project was developed as part of a research effort to advance quantum machine learning applications, culminating in a comprehensive research paper and novel methodologies.
+Our architecture solves this by marrying three distinct paradigms:
 
-## 🎯 Objectives
+1. **Classical Transfer Learning (EfficientNet-B0 Backbone)**
+   * **Why?** Quantum computers currently lack the qubit volume to directly ingest 128x128 RGB images ($128 \times 128 \times 3 \approx 49,000$ inputs). We use the convolutional layers of EfficientNet to geometrically extract high-level feature maps (edges, textures, shapes), heavily compressing the image while retaining spatial intelligence.
 
-- Design and implement a variational quantum classifier for multi-class classification tasks.
-- Compare the performance of quantum and classical models under similar computational constraints.
-- Optimize quantum circuits for NISQ devices to mitigate noise and improve scalability.
-- Provide a reproducible framework for researchers to build upon for future QML studies.
+2. **Quantum Feature Map (QNN & Entanglement)**
+   * **Why?** Once the classical features are extracted, we use `AmplitudeEmbedding` and `StronglyEntanglingLayers` to map these features into a high-dimensional Hilbert space. The quantum nodes act as an immensely complex non-linear regularizer. By entangling the feature states, the network spreads the representations across multiple qubits, making the decision boundaries significantly more robust to classical noise (like shadows or different soil types).
 
-## 🔬 Methodology
+3. **Quantum Support Vector Classifier (QSVC)**
+   * **Why?** Instead of using a standard neural network layer to make the final prediction, we use the Quantum Circuit to calculate a **Quantum Kernel Matrix** representing the "distance" between different feature states in the Hilbert space. We then pass this kernel to a Support Vector Classifier (SVC). 
+   * **The Quantum Advantage**: Unlike gradient descent, which gets stuck in local minima and perfectly memorizes the training data (causing overfitting), SVC mathematics are strictly convex. The QSVC finds the *Global Maximum Margin* hyperplane. This ensures that the quantum-separated features are divided with the absolute maximum possible generalization distance.
 
-The methodology combines classical data preprocessing, quantum circuit design, and hybrid training pipelines. Below is a visual representation of the workflow:
+**The Result?** A model that takes the visual intelligence of SOTA classical CNNs, regularizes it through Quantum Entanglement, and mathematically guarantees the most robust decision boundary possible using Quantum Kernel Support Vector Mathematics. 
 
-![Methodology Diagram](https://ik.imagekit.io/hogzil9ol/Agribot.drawio.png?updatedAt=1750065345452)
+---
 
-**Steps**:
-1. **Data Preprocessing**: Dimensionality reduction using PCA to prepare data for quantum encoding.
-2. **Quantum Circuit Design**: Utilizes parameterized quantum circuits with data re-uploading techniques for enhanced expressibility.
-3. **Training**: Employs a hybrid quantum-classical optimization loop using gradient-based methods.
-4. **Evaluation**: Assesses model performance on test datasets, comparing accuracy and computational cost with classical counterparts.
+## 📊 Results & Visualization (The `benchmark_sota/` suite)
 
-## 📊 Graphical Abstract
+We ran an aggressive 10-Run Variance Test over independent randomized subsets of the datasets to prevent cherry-picking. The model was evaluated on a strictly unseen OOD dataset (`DatasetNinja`) after training on `CornWeedDataset`.
 
-The following graphical abstract summarizes the project's approach and results:
+All analytical outputs are stored in the `benchmark_sota/` directory:
 
-![Graphical Abstract](https://ik.imagekit.io/hogzil9ol/Screenshot%202025-06-16%20144030.png?updatedAt=1750065062935)
+* **`ROC_Curve_Comparison.png`**: Proves our Hybrid CNN-QSVC achieves competitive Area Under the Curve (AUC), massively outperforming legacy setups.
+* **`PR_Curve_Comparison.png`**: Shows precision/recall thresholds across all tested architectures.
+* **`Model_Agreement_Heatmap.png`**: A Spearman Rank Correlation Heatmap. This is critical: it proves that the Quantum Models are making *different statistical decisions* than the Classical models, confirming that the quantum Hilbert mapping fundamentally altered the feature interpretation!
+* **`Training_Curve_ValAcc.png`**: Tracks the Validation Accuracy across 15 epochs for all architectures.
+* **`RadarChart_Highlights.png`**: A beautiful spider chart directly overlaying the Best Classical SOTA against the Quantum architecture.
+* **`SHAP_EfficientNet.png`**: Pixel-level feature importance maps showing exactly which leaves the model focuses on.
+* **`MASTER_BENCHMARK_RESULTS.csv`**: The consolidated metrics across all runs and models.
 
-This visual encapsulates the quantum classification pipeline, highlighting the integration of quantum circuits with classical neural networks and the achieved performance metrics.
+---
 
-## 📝 Research Paper
+## 💻 Codebase & How to Run
 
-For a detailed exploration of the methodology, experiments, and findings, please refer to the research paper:
+### 1. `Benchmark_Clean_Eval.py` (The Classical & Hybrid QNN Baseline)
+This script is the core baseline trainer. It automatically downloads the Kaggle datasets, cleans the data split (using MD5 hashing), and trains 8 different architectures (ResNet, EfficientNet, MobileNet, YOLOv8n, Custom CNN, Custom QNN, Hybrid scratch, Hybrid Transfer) over 15 Epochs using PyTorch. 
+*Note: This strictly trains the neural networks, not the QSVC.*
+```bash
+python Benchmark_Clean_Eval.py
+```
 
-[Download Research Paper](https://ik.imagekit.io/hogzil9ol/Research%20paper_main.docx?updatedAt=1750065344894)
+### 2. `Run_QSVC_Legit.py` (The True Quantum Kernel Pipeline)
+This script loads the pre-trained `Hybrid_CNN-QNN_(Transfer_Learning).pth` model, extracts the latent features, and feeds them into the PennyLane `lightning.qubit` C++ State-Vector simulator. It aggressively parallelizes across all available CPU cores using `joblib` to calculate the massive Quantum Kernel Matrix and fits the SVC.
+```bash
+python Run_QSVC_Legit.py
+```
 
-The paper provides an in-depth analysis of the quantum classification framework, including theoretical foundations, experimental results, and discussions on future directions.
+### 3. `Run_QSVC_Mixed_Variance.py` (The Robustness Validator)
+Used to prove statistical significance. It mixes the OOD DatasetNinja and the Training CornWeed dataset, expands the quantum kernel to a mathematically intensive 100x100 matrix, and runs the entire training and testing pipeline 10 separate times with different random seeds. It saves every model to `saved_models_variance/`.
+```bash
+python Run_QSVC_Mixed_Variance.py
+```
 
-## 🛠️ Installation and Usage
+### 4. `Advanced_Evaluation_Plots.py` (The Analytics Engine)
+This script parses the saved models and runs an extensive test-set inference pass. It is responsible for generating all the ROC curves, PR curves, Correlation Heatmaps, and SHAP visual importance overlays found in `benchmark_sota/`.
+```bash
+python Advanced_Evaluation_Plots.py
+```
 
-To run the code locally, follow these steps:
+---
 
-1. **Clone the Repository**:
-   ```bash
-   git clone https://github.com/manoharreddyvoladri/Quantum_Classification.git
-   cd Quantum_Classification
-   ```
+## 🛠️ Requirements & Environment
+* **Frameworks**: `PyTorch`, `PennyLane` (Quantum Simulation), `Scikit-Learn`, `Ultralytics` (YOLO)
+* **Backend**: PennyLane's `lightning.qubit` plugin is strictly required for the Kernel computation. Attempting to use `default.qubit` will result in unacceptable $O(N^2)$ bottlenecks.
+* **Compute**: The QSVC script defaults to `n_jobs=-1` to utilize 100% of available CPU Threads for parallel circuit simulation.
 
-2. **Install Dependencies**:
-   Ensure you have Python 3.8+ installed. Install required packages using:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Run the Notebook**:
-   Launch the Jupyter notebook to explore the implementation:
-   ```bash
-   jupyter notebook Quantum_Classification.ipynb
-   ```
-
-4. **Access Quantum Hardware** (optional):
-   To run on real quantum devices, configure your IBM Quantum Experience account and update the API token in the notebook.
-
-## 📈 Results
-
-- **Accuracy**: Achieved up to **96.5%** accuracy on a four-class classification task using the quantum classifier, surpassing classical benchmarks with similar parameters.
-- **Scalability**: Optimized circuits for NISQ devices, reducing gate depth and noise impact.
-- **Reproducibility**: All experiments are fully documented and reproducible with provided scripts.
-
-## 🌟 Contributions
-
-This project is a testament to my passion for quantum computing and machine learning. My key contributions include:
-- Developing a novel quantum classification pipeline tailored for NISQ devices.
-- Conducting extensive experiments to validate quantum advantages in classification tasks.
-- Authoring a comprehensive research paper to disseminate findings to the academic community.
-- Creating a user-friendly repository for researchers to extend and replicate the work.
-
-Feel free to explore the code, replicate the experiments, or reach out for collaborations!
-
-## 📬 Contact
-
-For questions, feedback, or collaboration opportunities, please contact me:
-- **GitHub**: [manoharreddyvoladri](https://github.com/manoharreddyvoladri)
-- **Email**: [voladrimanoharreddy@gmail.com](mailto:voladrimanoharreddy@gmail.com)
-
-## 🙏 Acknowledgments
-
-I extend my gratitude to my mentors, collaborators, and the open-source quantum computing community for their support and inspiration. Special thanks to libraries like Qiskit, PennyLane, and TensorFlow Quantum for enabling this research.
